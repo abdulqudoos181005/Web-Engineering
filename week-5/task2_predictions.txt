@@ -1,0 +1,56 @@
+Task 2 — Predict before you run
+================================
+
+Line 1: console.log([] == false);
+  Prediction: false
+  Actual:     true
+  Why: `==` does type coercion. [] is first converted to a primitive via
+  toString() -> "" (empty string). Then "" is compared to false, and both
+  sides get coerced to numbers: Number("") = 0, Number(false) = 0.
+  0 == 0 -> true. Classic loose-equality trap; === would give false instead.
+
+Line 2: console.log([1, 2, 3] + [4]);
+  Prediction: "1,2,34" (string, not an array)
+  Actual:     "1,2,34"
+  Why: `+` on two objects (arrays included) triggers string conversion,
+  not concatenation. [1,2,3].toString() = "1,2,3", [4].toString() = "4",
+  then normal string concatenation: "1,2,3" + "4" = "1,2,34".
+
+Line 3: console.log(typeof null);
+  Prediction: "object"
+  Actual:     "object"
+  Why: This is a long-standing JS bug baked into the language since the
+  very first version. null is a primitive, but typeof null has always
+  returned "object" due to how values were tagged internally. It can't be
+  fixed without breaking the web, so it's permanent.
+
+Line 4: console.log(0.1 + 0.2 === 0.3);
+  Prediction: false
+  Actual:     false
+  Why: Floating-point numbers are stored in binary (IEEE 754), and 0.1
+  and 0.2 can't be represented exactly in binary. 0.1 + 0.2 actually
+  evaluates to 0.30000000000000004, which is not === to 0.3. Compare
+  with a small epsilon instead (Math.abs(a - b) < Number.EPSILON) when
+  checking float equality.
+
+Line 5: console.log([10, 9, 1].sort());
+  Prediction: [1, 9, 10]
+  Actual:     [1, 10, 9]
+  Why: Array.prototype.sort() with no comparator converts elements to
+  strings and sorts lexicographically (UTF-16 code unit order), not
+  numerically. "10" sorts before "9" because "1" < "9" as characters.
+  Fix: [10, 9, 1].sort((a, b) => a - b) for numeric sort.
+
+Line 6: console.log(["a", "b"].map(x => x.toUpperCase()).join("-"));
+  Prediction: "A-B"
+  Actual:     "A-B"
+  Why: No surprise here — map() transforms each element, join("-") glues
+  the results together with "-" as the separator.
+
+Summary of surprises:
+  - Line 1 ([] == false) and Line 5 (default sort) are the two that trip
+    people up most: both come from JS quietly coercing types (to number,
+    and to string) in ways that don't match how a person reads the code.
+  - Lines 2, 3, and 4 are "known gotchas" of JS (array-to-string coercion,
+    the typeof null bug, and floating-point imprecision) that are widely
+    documented but still surprising the first time you hit them.
