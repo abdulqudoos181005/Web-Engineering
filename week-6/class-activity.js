@@ -17,3 +17,4 @@ function sndLrg (arr){
 
 }
 console.log(sndLrg([10, 3, 67,67,8])); // 10
+
